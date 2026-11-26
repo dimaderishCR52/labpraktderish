@@ -1,27 +1,35 @@
 import React from 'react';
-import { Alert, View, Text } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import TaskForm from '../../../src/components/TaskForm';
-import { useApp } from '../../../src/context/AppContext';
+import { router } from 'expo-router';
+import TaskForm from '../../../src/components/task/TaskForm';
+import EmptyState from '../../../src/components/ui/EmptyState';
+import Screen from '../../../src/components/ui/Screen';
+import { useTaskIdParam } from '../../../src/hooks/useTaskIdParam';
+import { useTasks } from '../../../src/hooks/useTasks';
+import { CreateTaskInput } from '../../../src/types/task';
 
 export default function EditTaskScreen() {
-    const params = useLocalSearchParams<{ id: string }>();
-    const id = Array.isArray(params.id) ? params.id[0] : params.id;
-    const { tasks, updateTask, theme } = useApp();
-    const task = tasks.find((item) => item.id === id);
+    const id = useTaskIdParam();
+    const { getTaskById, updateTask } = useTasks();
+    const task = getTaskById(id);
 
     if (!task) {
         return (
-            <View style={{ flex: 1, padding: 20 }}>
-                <Text>Задача не найдена. Вернитесь к списку и выберите существующую задачу.</Text>
-            </View>
+            <Screen>
+                <EmptyState
+                    icon="❓"
+                    title="Задача не найдена"
+                    description="Вернитесь к списку и выберите существующую задачу."
+                    actionLabel="Вернуться назад"
+                    onAction={() => router.back()}
+                />
+            </Screen>
         );
     }
 
-    const handleSave = async (title: string, subject: string, priority: 'low' | 'medium' | 'high') => {
-        await updateTask({ ...task, title, subject, priority });
+    const handleSave = (input: CreateTaskInput) => {
+        updateTask(task.id, input);
         router.back();
     };
 
-    return <TaskForm theme={theme} initialTask={task} onSave={handleSave} />;
+    return <TaskForm initialTask={task} onSave={handleSave} />;
 }

@@ -1,15 +1,16 @@
 import React from 'react';
 import { router } from 'expo-router';
-import TaskForm from '../../src/components/TaskForm';
-import { useApp } from '../../src/context/AppContext';
+import TaskForm from '../../src/components/task/TaskForm';
+import { useTasks } from '../../src/hooks/useTasks';
+import { CreateTaskInput } from '../../src/types/task';
 
 export default function NewTaskScreen() {
-    const { addTask, theme } = useApp();
+    const { createTask } = useTasks();
 
-    const handleSave = async (title: string, subject: string, priority: 'low' | 'medium' | 'high') => {
-        await addTask(title, subject, priority);
+    const handleSave = (input: CreateTaskInput) => {
+        createTask(input);
         router.back();
     };
 
-    return <TaskForm theme={theme} onSave={handleSave} />;
+    return <TaskForm onSave={handleSave} />;
 }

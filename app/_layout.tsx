@@ -1,15 +1,26 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
-import { AppProvider, useApp } from '../src/context/AppContext';
+import { ThemeProvider } from '../src/context/ThemeContext';
+import { TasksProvider } from '../src/context/TasksContext';
+import { useTheme } from '../src/hooks/useTheme';
+import { useTasks } from '../src/hooks/useTasks';
 
 function RootNavigator() {
-    const { theme, isReady } = useApp();
+    const { colors, isReady: themeReady } = useTheme();
+    const { isReady: tasksReady } = useTasks();
 
-    if (!isReady) {
+    if (!themeReady || !tasksReady) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f2f3f5' }}>
-                <ActivityIndicator size="large" color="#222222" />
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: colors.background,
+                }}
+            >
+                <ActivityIndicator size="large" color={colors.primary} />
             </View>
         );
     }
@@ -17,9 +28,9 @@ function RootNavigator() {
     return (
         <Stack
             screenOptions={{
-                headerStyle: { backgroundColor: theme === 'light' ? '#ffffff' : '#202124' },
-                headerTintColor: theme === 'light' ? '#222222' : '#ffffff',
-                contentStyle: { backgroundColor: theme === 'light' ? '#f2f3f5' : '#121212' },
+                headerStyle: { backgroundColor: colors.card },
+                headerTintColor: colors.text,
+                contentStyle: { backgroundColor: colors.background },
             }}
         >
             <Stack.Screen name="index" options={{ title: 'Campus Planner' }} />
@@ -33,8 +44,10 @@ function RootNavigator() {
 
 export default function RootLayout() {
     return (
-        <AppProvider>
-            <RootNavigator />
-        </AppProvider>
+        <ThemeProvider>
+            <TasksProvider>
+                <RootNavigator />
+            </TasksProvider>
+        </ThemeProvider>
     );
 }
