@@ -7,6 +7,7 @@ interface AppButtonProps {
     title: string;
     onPress: () => void;
     variant?: 'primary' | 'secondary';
+    size?: 'md' | 'sm';
     disabled?: boolean;
     style?: StyleProp<ViewStyle>;
 }
@@ -15,11 +16,13 @@ export default function AppButton({
                                       title,
                                       onPress,
                                       variant = 'primary',
+                                      size = 'md',
                                       disabled = false,
                                       style,
                                   }: AppButtonProps) {
     const { colors } = useTheme();
     const isPrimary = variant === 'primary';
+    const isSmall = size === 'sm';
 
     return (
         <TouchableOpacity
@@ -28,6 +31,7 @@ export default function AppButton({
             activeOpacity={0.8}
             style={[
                 styles.button,
+                isSmall && styles.buttonSmall,
                 isPrimary
                     ? { backgroundColor: colors.primary }
                     : { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
@@ -35,7 +39,13 @@ export default function AppButton({
                 style,
             ]}
         >
-            <Text style={[styles.text, { color: isPrimary ? colors.onPrimary : colors.text }]}>
+            <Text
+                style={[
+                    styles.text,
+                    isSmall && styles.textSmall,
+                    { color: isPrimary ? colors.onPrimary : colors.text },
+                ]}
+            >
                 {title}
             </Text>
         </TouchableOpacity>
@@ -49,6 +59,8 @@ const styles = StyleSheet.create({
         borderRadius: radius.md,
         alignItems: 'center',
     },
+    buttonSmall: { paddingVertical: 10, paddingHorizontal: spacing.sm },
     text: { fontSize: 16, fontWeight: '700' },
+    textSmall: { fontSize: 14 },
     disabled: { opacity: 0.6 },
 });

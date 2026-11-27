@@ -15,6 +15,7 @@ interface StoredTask {
     status?: TaskStatus;
     createdAt?: string;
     dueDate?: string;
+    description?: string;
 }
 
 function normalizeTask(raw: StoredTask): Task {
@@ -27,6 +28,7 @@ function normalizeTask(raw: StoredTask): Task {
         createdAt: raw.createdAt ?? new Date().toISOString(),
     };
     if (raw.dueDate) task.dueDate = raw.dueDate;
+    if (raw.description) task.description = raw.description;
     return task;
 }
 
@@ -69,6 +71,7 @@ export async function loadDraft(): Promise<TaskDraft | null> {
             subject: parsed.subject ?? '',
             priority: parsed.priority ?? 'medium',
             dueDate: parsed.dueDate ?? '',
+            description: parsed.description ?? '',
         };
     } catch {
         return null;

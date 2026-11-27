@@ -1,17 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ListRenderItemInfo, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import TaskCard from '../src/components/task/TaskCard';
+import TaskProgress from '../src/components/task/TaskProgress';
 import TaskStats from '../src/components/task/TaskStats';
 import AppButton from '../src/components/ui/AppButton';
 import AppInput from '../src/components/ui/AppInput';
 import EmptyState from '../src/components/ui/EmptyState';
 import Screen from '../src/components/ui/Screen';
 import SegmentedControl from '../src/components/ui/SegmentedControl';
+import { useNewTaskId } from '../src/hooks/useNewTaskId';
 import { useTasks } from '../src/hooks/useTasks';
 import { useTheme } from '../src/hooks/useTheme';
 import { spacing } from '../src/theme/spacing';
-import { TaskFilter, TaskSort } from '../src/types/task';
+import { Task, TaskFilter, TaskSort } from '../src/types/task';
 import {
     FILTER_OPTIONS,
     filterByStatus,
@@ -21,8 +24,9 @@ import {
 } from '../src/utils/task';
 
 export default function HomeScreen() {
-    const { tasks } = useTasks();
+    const { tasks, toggleTaskStatus, removeTask } = useTasks();
     const { colors } = useTheme();
+    const newTaskId = useNewTaskId(tasks);
     const [filter, setFilter] = useState<TaskFilter>('all');
     const [sort, setSort] = useState<TaskSort>('newest');
     const [query, setQuery] = useState('');
@@ -34,15 +38,29 @@ export default function HomeScreen() {
 
     const isSearching = query.trim().length > 0;
 
+    const confirmRemove = (task: Task) => {
+        Alert.alert('Удалить задачу?', `«${task.title}»`, [
+            { text: 'Отмена', style: 'cancel' },
+            { text: 'Удалить', style: 'destructive', onPress: () => removeTask(task.id) },
+        ]);
+    };
+
     return (
         <Screen>
-            <FlatList
+            <Animated.FlatList
                 data={visibleTasks}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
+                keyExtractor={(item: Task) => item.id}
+                itemLayoutAnimation={LinearTransition}
+                renderItem={({ item }: ListRenderItemInfo<Task>) => (
                     <TaskCard
                         task={item}
-                        onPress={() => router.push({ pathname: '/task/[id]', params: { id: item.id } })}
+                        highlighted={item.id === newTaskId}
+                        onOpen={() => router.push({ pathname: '/task/[id]', params: { id: item.id } })}
+                        onEdit={() =>
+                            router.push({ pathname: '/task/edit/[id]', params: { id: item.id } })
+                        }
+                        onToggle={() => toggleTaskStatus(item.id)}
+                        onRemove={() => confirmRemove(item)}
                     />
                 )}
                 ListHeaderComponent={
@@ -53,6 +71,7 @@ export default function HomeScreen() {
                         </Text>
 
                         <TaskStats tasks={tasks} />
+                        <TaskProgress tasks={tasks} />
 
                         <AppInput
                             placeholder="Поиск по названию или предмету"

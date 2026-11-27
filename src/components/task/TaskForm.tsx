@@ -3,8 +3,8 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import { CreateTaskInput, Task, TaskPriority } from '../../types/task';
 import { useTheme } from '../../hooks/useTheme';
 import { useTaskDraft } from '../../hooks/useTaskDraft';
-import { radius, spacing } from '../../theme/spacing';
-import { isValidDateString, PRIORITY_OPTIONS } from '../../utils/task';
+import { radius } from '../../theme/spacing';
+import { formatDateForDisplay, parseDisplayDate, PRIORITY_OPTIONS } from '../../utils/task';
 import AppButton from '../ui/AppButton';
 import AppInput from '../ui/AppInput';
 import Screen from '../ui/Screen';
@@ -25,8 +25,8 @@ function validate(title: string, subject: string, dueDate: string): FormErrors {
     const errors: FormErrors = {};
     if (!title.trim()) errors.title = 'Введите название задачи.';
     if (!subject.trim()) errors.subject = 'Введите название предмета.';
-    if (dueDate.trim() && !isValidDateString(dueDate.trim())) {
-        errors.dueDate = 'Введите дату в формате ГГГГ-ММ-ДД.';
+    if (dueDate.trim() && !parseDisplayDate(dueDate)) {
+        errors.dueDate = 'Введите существующую дату в формате ДД.ММ.ГГГГ.';
     }
     return errors;
 }
@@ -38,18 +38,22 @@ export default function TaskForm({ initialTask, onSave }: TaskFormProps) {
     const [title, setTitle] = useState(initialTask?.title ?? '');
     const [subject, setSubject] = useState(initialTask?.subject ?? '');
     const [priority, setPriority] = useState<TaskPriority>(initialTask?.priority ?? 'medium');
-    const [dueDate, setDueDate] = useState(initialTask?.dueDate ?? '');
+    const [dueDate, setDueDate] = useState(
+        initialTask?.dueDate ? formatDateForDisplay(initialTask.dueDate) : '',
+    );
+    const [description, setDescription] = useState(initialTask?.description ?? '');
     const [errors, setErrors] = useState<FormErrors>({});
     const [saving, setSaving] = useState(false);
 
     const { removeDraft } = useTaskDraft(
         !isEdit,
-        { title, subject, priority, dueDate },
+        { title, subject, priority, dueDate, description },
         (draft) => {
             setTitle(draft.title);
             setSubject(draft.subject);
             setPriority(draft.priority);
             setDueDate(draft.dueDate);
+            setDescription(draft.description);
         },
     );
 
@@ -64,7 +68,8 @@ export default function TaskForm({ initialTask, onSave }: TaskFormProps) {
                 title: title.trim(),
                 subject: subject.trim(),
                 priority,
-                dueDate: dueDate.trim() || undefined,
+                dueDate: parseDisplayDate(dueDate) ?? undefined,
+                description: description.trim() || undefined,
             });
             if (!isEdit) await removeDraft();
         } catch {
@@ -103,12 +108,20 @@ export default function TaskForm({ initialTask, onSave }: TaskFormProps) {
                 />
                 <AppInput
                     label="Срок выполнения (необязательно)"
-                    placeholder="ГГГГ-ММ-ДД"
+                    placeholder="ДД.ММ.ГГГГ"
                     value={dueDate}
                     onChangeText={setDueDate}
                     error={errors.dueDate}
                     autoCapitalize="none"
                     keyboardType="numbers-and-punctuation"
+                />
+                <AppInput
+                    label="Описание (необязательно)"
+                    placeholder="Что нужно сделать"
+                    value={description}
+                    onChangeText={setDescription}
+                    multiline
+                    style={styles.multiline}
                 />
 
                 <Text style={[styles.label, { color: colors.textSecondary }]}>Приоритет</Text>
@@ -124,4 +137,5 @@ const styles = StyleSheet.create({
     form: { borderRadius: radius.lg, padding: 18 },
     title: { fontSize: 23, fontWeight: '800', marginBottom: 20 },
     label: { fontSize: 14, fontWeight: '600', marginBottom: 7 },
+    multiline: { height: 96, paddingTop: 12, textAlignVertical: 'top' },
 });

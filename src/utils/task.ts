@@ -85,6 +85,18 @@ export function isValidDateString(value: string): boolean {
         date.getDate() === day
     );
 }
+export function formatDateForDisplay(iso: string): string {
+    if (!isValidDateString(iso)) return iso;
+    const [year, month, day] = iso.split('-');
+    return `${day}.${month}.${year}`;
+}
+
+export function parseDisplayDate(value: string): string | null {
+    const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value.trim());
+    if (!match) return null;
+    const iso = `${match[3]}-${match[2]}-${match[1]}`;
+    return isValidDateString(iso) ? iso : null;
+}
 
 export function isOverdue(task: Task, now: Date = new Date()): boolean {
     if (!task.dueDate || task.status === 'completed') return false;
@@ -104,4 +116,14 @@ export function buildTask(input: CreateTaskInput, now: Date = new Date()): Task 
         status: 'active',
         createdAt: now.toISOString(),
     };
+}
+
+export function clamp01(value: number): number {
+    if (!Number.isFinite(value)) return 0;
+    return Math.min(1, Math.max(0, value));
+}
+
+export function getCompletionRatio(tasks: Task[]): number {
+    if (tasks.length === 0) return 0;
+    return clamp01(countTasks(tasks).completed / tasks.length);
 }

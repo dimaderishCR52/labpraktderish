@@ -8,7 +8,12 @@ import { useTaskIdParam } from '../../src/hooks/useTaskIdParam';
 import { useTasks } from '../../src/hooks/useTasks';
 import { useTheme } from '../../src/hooks/useTheme';
 import { radius, spacing } from '../../src/theme/spacing';
-import { isOverdue, PRIORITY_LABELS, STATUS_LABELS } from '../../src/utils/task';
+import {
+    formatDateForDisplay,
+    isOverdue,
+    PRIORITY_LABELS,
+    STATUS_LABELS,
+} from '../../src/utils/task';
 
 function Info({ label, value, danger = false }: { label: string; value: string; danger?: boolean }) {
     const { colors } = useTheme();
@@ -69,10 +74,15 @@ export default function TaskDetailsScreen() {
                 {task.dueDate ? (
                     <Info
                         label="Срок"
-                        value={overdue ? `${task.dueDate} (просрочено)` : task.dueDate}
+                        value={
+                            overdue
+                                ? `${formatDateForDisplay(task.dueDate)} (просрочено)`
+                                : formatDateForDisplay(task.dueDate)
+                        }
                         danger={overdue}
                     />
                 ) : null}
+                {task.description ? <Info label="Описание" value={task.description} /> : null}
             </View>
 
             <AppButton

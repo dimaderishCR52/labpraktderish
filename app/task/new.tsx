@@ -8,8 +8,9 @@ export default function NewTaskScreen() {
     const { createTask } = useTasks();
 
     const handleSave = (input: CreateTaskInput) => {
-        createTask(input);
         router.back();
+        // Создаём после закрытия формы, чтобы появление карточки было видно на списке.
+        setTimeout(() => createTask(input), 350);
     };
 
     return <TaskForm onSave={handleSave} />;

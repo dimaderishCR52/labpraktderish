@@ -11,6 +11,9 @@ export interface ColorPalette {
     accent: string;
     selected: string;
     danger: string;
+    success: string;
+    completedBackground: string;
+    highlight: string;
 }
 
 export const lightColors: ColorPalette = {
@@ -24,6 +27,9 @@ export const lightColors: ColorPalette = {
     accent: '#3157a4',
     selected: '#6d8be8',
     danger: '#c62828',
+    success: '#2e7d32',
+    completedBackground: '#e8f3ea',
+    highlight: '#fff2b8',
 };
 
 export const darkColors: ColorPalette = {
@@ -37,6 +43,9 @@ export const darkColors: ColorPalette = {
     accent: '#b8c7ff',
     selected: '#6d8be8',
     danger: '#ff8a80',
+    success: '#81c784',
+    completedBackground: '#1c2a20',
+    highlight: '#4a4020',
 };
 
 export const palettes: Record<ThemeName, ColorPalette> = {

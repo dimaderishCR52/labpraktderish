@@ -9,7 +9,7 @@ export function useTaskDraft(
     onRestore: (draft: TaskDraft) => void,
 ) {
     const [loaded, setLoaded] = useState(!enabled);
-    const { title, subject, priority, dueDate } = values;
+    const { title, subject, priority, dueDate, description } = values;
 
     useEffect(() => {
         if (!enabled) return;
@@ -52,8 +52,8 @@ export function useTaskDraft(
 
     useEffect(() => {
         if (!enabled || !loaded) return;
-        saveDraft({ title, subject, priority, dueDate }).catch(() => {});
-    }, [enabled, loaded, title, subject, priority, dueDate]);
+        saveDraft({ title, subject, priority, dueDate, description }).catch(() => {});
+    }, [enabled, loaded, title, subject, priority, dueDate, description]);
 
     return { removeDraft };
 }
